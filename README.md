@@ -18,6 +18,9 @@ npm run build
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
+// 全选
+// 状态持久化（当你选择其他类型后，再回到之前的类型，会发现之前勾选的内容会是无选择的状态）
+
 [
     {
         title: '华为',

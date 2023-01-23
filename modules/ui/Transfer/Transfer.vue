@@ -15,17 +15,47 @@
         <div class="transfer">
             <div class="box left-list">
                 <h1 class="list-title"> {{ leftTitle }}</h1>
-                <div>
-
+                <div
+                    v-for="item of leftListData"
+                    :key="item.id"
+                    :class="['list-item', item.disabled ? 'disabled' : '']"
+                >
+                    <input 
+                        type="checkbox"
+                        :disabled="item.disabled"
+                        :id="'__checkbox__' + item.id"
+                        @click="setCheckedData($event.target.checked, 'left', item)"
+                    >
+                    <label :for="'__checkbox__' + item.id">{{ item.phone_name }}</label>
                 </div>
             </div>
             <div class="box button-group">
-                <button>&lt;</button>
-                <button>&gt;</button>
+                <button
+                    :disabled="transferButtonDisabled.left"
+                    @click="removeRightListData(checkedData.right)"
+                >&lt;</button>
+                <button
+                    :disabled="transferButtonDisabled.right"
+                    @click="addRightListData(checkedData.left)"
+                >&gt;</button>
             </div>
             <div class="box right-list">
                 <h1 class="list-title"> {{ rightTitle }}</h1>
-                <div></div>
+                <div>
+                    <div
+                        v-for="item of rightListData"
+                        :key="item.id"
+                        :class="['list-item', item.disabled ? 'disabled' : '']"
+                    >
+                        <input 
+                            type="checkbox"
+                            :disabled="item.disabled"
+                            :id="'__checkbox__' + item.id"
+                            @click="setCheckedData($event.target.checked, 'right', item)"
+                        >
+                        <label :for="'__checkbox__' + item.id">{{ item.phone_name }}</label>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -33,7 +63,7 @@
 
 <script setup>
     import propsDefination from './extends/props'
-    import { useTargetIndex, useComputedData } from './extends/hooks'
+    import { useTargetIndex, useComputedData, useRightListData, useCheckedData } from './extends/hooks'
 
     const props = defineProps(propsDefination);
     const options =  props.data.map(({title}) => title);
@@ -43,11 +73,29 @@
         setTargetIndex
     ] = useTargetIndex(0);
 
-    const {
-        leftTitle
-    } = useComputedData(props.data, targetIndex);
+    const [
+        checkedData,
+        addCheckedData,
+        removeCheckedData
+    ] = useCheckedData();
 
-    
+    const [
+        rightListData,
+        addRightListData,
+        removeRightListData
+    ] = useRightListData([], checkedData);
+
+    const {
+        leftTitle,
+        leftListData,
+        transferButtonDisabled
+    } = useComputedData(props.data, targetIndex, rightListData, checkedData);
+
+    const setCheckedData = (checked, leftOrRight, item) => {
+        checked
+            ? addCheckedData(leftOrRight, item)
+            : removeCheckedData(leftOrRight, item.id);
+    }
 
 </script>
 
@@ -73,6 +121,18 @@
             color: #666;
             border-bottom: 1px solid #ddd;
             background-color: #efefef;
+        }
+
+        .list-item { 
+            display: flex;
+            align-items: center;
+            height: 30px;
+            font-size: 12px;
+            color: #666;
+
+            &.disabled {
+                opacity: .6;
+            }
         }
 
         &.button-group {
